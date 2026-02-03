@@ -1,13 +1,15 @@
+from datetime import datetime
+from sqlite3 import connect
 from typing import Any, Tuple, Literal
-from metric_anomaly_investigator.models import (
+
+from scipy import stats
+
+from metric_anomaly_investigator.schemas import (
     MetricDataPoint,
     DimensionalBreakdown,
     Deployment,
 )
-from datetime import datetime
-from sqlite3 import connect
 from metric_anomaly_investigator.settings import settings
-from scipy import stats
 
 SUPPORTED_METRICS = Literal["dau", "wau", "events_per_user"]
 ALLOWED_COLUMNS = ["platform", "country", "device_type", "app_version", "event_type"]
@@ -92,7 +94,7 @@ class MockDataWarehouse:
                 week_on_year = row_dict["week"]
                 year = int(week_on_year[:4])
                 week = int(week_on_year[5:])
-                return datetime.strptime(f"{year}-W{week}-1", "%Y-%m-%d")
+                return datetime.strptime(f"{year}-W{week:02d}-1", "%G-W%V-%u")
             case _:
                 raise ValueError(
                     f"Unsupported metric for timestamp parsing: {metric_name}"

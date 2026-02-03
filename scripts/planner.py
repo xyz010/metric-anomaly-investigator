@@ -1,6 +1,7 @@
-from metric_anomaly_investigator.investigation_planner import InvestigationPlanner
-from metric_anomaly_investigator.models import UserQuery
 import asyncio
+
+from metric_anomaly_investigator.investigation_planner import InvestigationPlanner
+from metric_anomaly_investigator.schemas import UserQuery
 
 
 async def main():
