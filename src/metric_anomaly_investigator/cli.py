@@ -1,9 +1,14 @@
 import asyncio
-import traceback
-from metric_anomaly_investigator.agent import MetricAnomalyAgent
 import logging
+import traceback
+
+from rich.console import Console
+
+from metric_anomaly_investigator.agent import MetricAnomalyAgent
+from metric_anomaly_investigator.report_formatter import print_report
 
 logger = logging.getLogger(__name__)
+console = Console()
 
 
 async def async_main():
@@ -30,6 +35,12 @@ async def async_main():
                 query, context_id=context_id
             )
             logger.info(f"Investigation Plan:\n{plan}\n")
+
+            report = agent.conversations[context_id].insights
+            if report:
+                print_report(report, console)
+            else:
+                logger.warning("No insights report generated.")
         except Exception as e:
             logger.error(f"Error during investigation: {e}")
             logger.error(traceback.format_exc())
