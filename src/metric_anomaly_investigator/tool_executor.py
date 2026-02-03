@@ -31,7 +31,9 @@ class ToolExecutor:
         )
         return {"metric_data": [r.model_dump() for r in results]}
 
-    def _execute_segmentation(self, parameters: SegmentByDimensionParams | dict) -> dict:
+    def _execute_segmentation(
+        self, parameters: SegmentByDimensionParams | dict
+    ) -> dict:
         # Ensure parameters is a proper model instance
         if isinstance(parameters, dict):
             parameters = SegmentByDimensionParams(**parameters)
@@ -44,7 +46,9 @@ class ToolExecutor:
         )
         return {"segmented_data": [r.model_dump() for r in results]}
 
-    def _execute_deployment_check(self, parameters: CheckDeploymentsParams | dict) -> dict:
+    def _execute_deployment_check(
+        self, parameters: CheckDeploymentsParams | dict
+    ) -> dict:
         if isinstance(parameters, dict):
             parameters = CheckDeploymentsParams(**parameters)
         results = self.warehouse.check_deployments(
@@ -53,7 +57,9 @@ class ToolExecutor:
         )
         return {"deployments": [r.model_dump() for r in results]}
 
-    def _execute_retention_analysis(self, parameters: AnalyzeRetentionParams | dict) -> dict:
+    def _execute_retention_analysis(
+        self, parameters: AnalyzeRetentionParams | dict
+    ) -> dict:
         if isinstance(parameters, dict):
             parameters = AnalyzeRetentionParams(**parameters)
         results = self.warehouse.analyze_cohort_retention(
@@ -63,7 +69,9 @@ class ToolExecutor:
         )
         return {"retention_data": [results]}
 
-    def _execute_statistical_test(self, parameters: StatisticalTestParams | dict) -> dict:
+    def _execute_statistical_test(
+        self, parameters: StatisticalTestParams | dict
+    ) -> dict:
         if isinstance(parameters, dict):
             parameters = StatisticalTestParams(**parameters)
         result = self.warehouse.run_statistical_test(
