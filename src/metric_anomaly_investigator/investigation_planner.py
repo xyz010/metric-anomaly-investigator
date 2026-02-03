@@ -1,8 +1,9 @@
 from pydantic_ai import Agent
 from pydantic_ai.models.anthropic import AnthropicModel
-from metric_anomaly_investigator.models import (
-    InvestigationPlan,
+
+from metric_anomaly_investigator.schemas import (
     ConversationContext,
+    InvestigationPlan,
     UserQuery,
 )
 from metric_anomaly_investigator.settings import settings

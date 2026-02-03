@@ -1,53 +1,84 @@
-from metric_anomaly_investigator.models import InvestigationStep, StepResult
-from metric_anomaly_investigator.db.mock_warehouse import MockDataWarehouse
+import logging
 import traceback
+
+from metric_anomaly_investigator.schemas import (
+    InvestigationStep,
+    StepResult,
+    QueryMetricParams,
+    SegmentByDimensionParams,
+    CheckDeploymentsParams,
+    AnalyzeRetentionParams,
+    StatisticalTestParams,
+)
+from metric_anomaly_investigator.db.mock_warehouse import MockDataWarehouse
 from metric_anomaly_investigator.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class ToolExecutor:
     def __init__(self, warehouse: MockDataWarehouse):
         self.warehouse = warehouse
 
-    def _execute_query_metric(self, parameters: dict) -> dict:
+    def _execute_query_metric(self, parameters: QueryMetricParams | dict) -> dict:
+        if isinstance(parameters, dict):
+            parameters = QueryMetricParams(**parameters)
         results = self.warehouse.query_metric(
-            metric_name=parameters["metric_name"],
-            time_range=tuple(parameters["time_range"]),
-            dimensions=parameters["dimensions"],
-            filters=parameters["filters"],
+            metric_name=parameters.metric_name,
+            time_range=tuple(parameters.time_range),
+            dimensions=parameters.dimensions,
+            filters=parameters.filters,
         )
         return {"metric_data": [r.model_dump() for r in results]}
 
-    def _execute_segmentation(self, parameters: dict) -> dict:
+    def _execute_segmentation(
+        self, parameters: SegmentByDimensionParams | dict
+    ) -> dict:
+        # Ensure parameters is a proper model instance
+        if isinstance(parameters, dict):
+            parameters = SegmentByDimensionParams(**parameters)
         results = self.warehouse.get_dimensional_breakdown(
-            metric_name=parameters["metric_name"],
-            dimension=parameters["dimension"],
-            time_range=tuple(parameters["time_range"]),
-            baseline_range=tuple(parameters["baseline_range"]),
-            min_drop_threshold=parameters["min_drop_threshold"],
+            metric_name=parameters.metric_name,
+            dimension=parameters.dimension,
+            time_range=tuple(parameters.time_range),
+            baseline_range=tuple(parameters.baseline_range),
+            min_drop_threshold=parameters.min_drop_threshold,
         )
         return {"segmented_data": [r.model_dump() for r in results]}
 
-    def _execute_deployment_check(self, parameters: dict) -> dict:
+    def _execute_deployment_check(
+        self, parameters: CheckDeploymentsParams | dict
+    ) -> dict:
+        if isinstance(parameters, dict):
+            parameters = CheckDeploymentsParams(**parameters)
         results = self.warehouse.check_deployments(
-            time_range=tuple(parameters["time_range"]),
-            platform=parameters["platform"],
+            time_range=tuple(parameters.time_range),
+            platform=parameters.platform,
         )
         return {"deployments": [r.model_dump() for r in results]}
 
-    def _execute_retention_analysis(self, parameters: dict) -> dict:
+    def _execute_retention_analysis(
+        self, parameters: AnalyzeRetentionParams | dict
+    ) -> dict:
+        if isinstance(parameters, dict):
+            parameters = AnalyzeRetentionParams(**parameters)
         results = self.warehouse.analyze_cohort_retention(
-            cohort_date=parameters["cohort_date"],
-            retention_days=parameters.get("retention_days", [1, 7, 30]),
-            filters=parameters.get("filters", {}),
+            cohort_date=parameters.cohort_date,
+            retention_days=parameters.retention_days,
+            filters=parameters.filters or {},
         )
         return {"retention_data": [results]}
 
-    def _execute_statistical_test(self, parameters: dict) -> dict:
+    def _execute_statistical_test(
+        self, parameters: StatisticalTestParams | dict
+    ) -> dict:
+        if isinstance(parameters, dict):
+            parameters = StatisticalTestParams(**parameters)
         result = self.warehouse.run_statistical_test(
-            metric_name=parameters["metric_name"],
-            control_filters=parameters["control_filters"],
-            treatment_filters=parameters["treatment_filters"],
-            time_range=tuple(parameters["time_range"]),
+            metric_name=parameters.metric_name,
+            control_filters=parameters.control_filters,
+            treatment_filters=parameters.treatment_filters,
+            time_range=tuple(parameters.time_range),
         )
         return {"statistical_test_result": result}
 
@@ -76,7 +107,7 @@ class ToolExecutor:
                 retention_data = data.get("retention_data", [])
                 if retention_data:
                     findings.append("Cohort retention analysis completed.")
-            case "statistical_test":
+            case "statistical_analysis":
                 test_result = data.get("statistical_test_result", {})
                 if test_result:
                     findings.append("Statistical test executed.")
@@ -111,7 +142,10 @@ class ToolExecutor:
 
     def execute_step(self, step: InvestigationStep) -> StepResult:
         try:
-            match step.action:
+            action_value = step.action  # Already a string from Literal type
+            logger.info(f"Executing action: {action_value}")
+            logger.info(f"With parameters: {step.parameters}")
+            match action_value:
                 case "query_metric":
                     data = self._execute_query_metric(step.parameters)
                 case "segment_by_dimension":
@@ -120,13 +154,13 @@ class ToolExecutor:
                     data = self._execute_deployment_check(step.parameters)
                 case "analyze_retention":
                     data = self._execute_retention_analysis(step.parameters)
-                case "statistical_test":
+                case "statistical_analysis":
                     data = self._execute_statistical_test(step.parameters)
                 case _:
                     raise ValueError(f"Unknown action: {step.action}")
 
-            findings = self._extract_findings(step.action, data)
-            confidence = self._compute_confidence(step.action, data)
+            findings = self._extract_findings(action_value, data)
+            confidence = self._compute_confidence(action_value, data)
 
             return StepResult(
                 step_id=step.step_id,

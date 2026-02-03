@@ -1,31 +1,9 @@
 from pydantic import BaseModel, Field
-from enum import Enum
 from typing import Any, Dict
 from datetime import datetime
-
-
-# Investigation Models
-class InvestigationActionType(Enum):
-    QUERY_METRIC = "query_metric"
-    SEGMENT_BY_DIMENSION = "segment_by_dimension"
-    CHECK_DEPLOYMENTS = "check_deployments"
-    ANALYZE_RETENTION = "analyze_retention"
-    STATISTICAL_ANALYSIS = "statistical_analysis"
-
-
-class InvestigationStep(BaseModel):
-    step_id: int
-    action: InvestigationActionType
-    parameters: dict[str, Any]
-    reasoning: str
-
-
-class InvestigationPlan(BaseModel):
-    steps: list[InvestigationStep]
-    priority_dimensions: list[str] = Field(
-        description="Dimensions to investigate first"
-    )
-    hypothesis: str = Field(description="Initial hypothesis about the anomaly cause")
+from metric_anomaly_investigator.schemas.investigation_actions import (
+    InvestigationPlan,
+)
 
 
 # Result Models
