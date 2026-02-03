@@ -1,13 +1,22 @@
 [project]
-name = "agent-demo"
+name = "metric-anomaly-investigator"
 version = "0.1.0"
-description = "Add your description here"
+description = "An investigator for metric anomalies using AI."
 readme = "README.md"
-requires-python = ">=3.9"
-dependencies = []
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "pandas>=3.0.0,<4.0.0",
+    "pydantic>=2.12.5,<3.0.0",
+    "pydantic-ai>=1.51.0,<2.0.0",
+]
+
+[dependency-groups]
+tests = ["pytest"]
+
+local = ["ipython", "ruff>=0.14.14,<0.15.0", "pre-commit>=4.5.1,<5.0.0"]
 
 [project.scripts]
-agent-demo = "agent_demo:main"
+metric-anomaly-investigator = "metric_anomaly_investigator:main"
 
 [build-system]
 requires = ["uv_build>=0.9.28,<0.10.0"]

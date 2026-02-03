@@ -1,0 +1,27 @@
+name: CI/CD Workflow
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  pull_request: read
+
+jobs:
+  static:
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v6.0.1
+
+    - name: Set up Python
+      uses: actions/setup-python@v6.2.0
+      with:
+        python-version: ".python-version"
+        cache: pip
+    - name: Install dependencies
+      run: pip install "ruff>=0.14.14,<0.15.0"
+    - name: Run ruff
+      run: ruff check .
+    - name: Run ruff format check
+      run: ruff format --check .
