@@ -1,6 +1,6 @@
 [project]
 name = "metric-anomaly-investigator"
-version = "0.1.0"
+version = "0.1.1"
 description = "An investigator for metric anomalies using AI."
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
@@ -8,6 +8,7 @@ dependencies = [
     "pandas>=3.0.0,<4.0.0",
     "pydantic>=2.12.5,<3.0.0",
     "pydantic-ai>=1.51.0,<2.0.0",
+    "rich>=14.0.0",
     "scipy>=1.17.0",
 ]
 

@@ -7,8 +7,12 @@ from metric_anomaly_investigator.schemas import (
     InvestigationStep,
     UserQuery,
 )
-from .investigation_planner import InvestigationPlanner
-from .tool_executor import ToolExecutor
+
+from metric_anomaly_investigator.agent import (
+    InvestigationPlanner,
+    InsightsGenerator,
+    ToolExecutor,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +22,7 @@ class MetricAnomalyAgent:
         self.warehouse = MockDataWarehouse()
         self.tool_executor = ToolExecutor(self.warehouse)
         self.investigation_planner = InvestigationPlanner()
+        self.insights_generator = InsightsGenerator()
 
         self.conversations = {}
 
@@ -66,7 +71,11 @@ class MetricAnomalyAgent:
                 logger.error(
                     f"Step {step.step_id} failed with error: {result.error_message}"
                 )
-        # TODO - synthesis insights
+
+        context.insights = await self.insights_generator.generate_insights(
+            plan=plan, results=context.executed_steps
+        )
+
         return plan, context_id
 
     async def follow_up_conversation(
