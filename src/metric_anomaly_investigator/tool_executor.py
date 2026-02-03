@@ -53,30 +53,34 @@ class ToolExecutor:
 
     def _extract_findings(self, action: str, data: dict) -> list[str]:
         findings = []
-        if action == "query_metric":
-            metric_data = data.get("metric_data", [])
-            if metric_data:
-                findings.append(
-                    f"Queried {len(metric_data)} data points for the metric."
-                )
-        elif action == "segment_by_dimension":
-            segmented_data = data.get("segmented_data", [])
-            if segmented_data:
-                findings.append(f"Segmented data into {len(segmented_data)} groups.")
-        elif action == "check_deployments":
-            deployments = data.get("deployments", [])
-            if deployments:
-                findings.append(
-                    f"Found {len(deployments)} deployments in the specified time range."
-                )
-        elif action == "analyze_retention":
-            retention_data = data.get("retention_data", [])
-            if retention_data:
-                findings.append("Cohort retention analysis completed.")
-        elif action == "statistical_test":
-            test_result = data.get("statistical_test_result", {})
-            if test_result:
-                findings.append("Statistical test executed.")
+        match action:
+            case "query_metric":
+                metric_data = data.get("metric_data", [])
+                if metric_data:
+                    findings.append(
+                        f"Queried {len(metric_data)} data points for the metric."
+                    )
+            case "segment_by_dimension":
+                segmented_data = data.get("segmented_data", [])
+                if segmented_data:
+                    findings.append(
+                        f"Segmented data into {len(segmented_data)} groups."
+                    )
+            case "check_deployments":
+                deployments = data.get("deployments", [])
+                if deployments:
+                    findings.append(
+                        f"Found {len(deployments)} deployments in the specified time range."
+                    )
+            case "analyze_retention":
+                retention_data = data.get("retention_data", [])
+                if retention_data:
+                    findings.append("Cohort retention analysis completed.")
+            case "statistical_test":
+                test_result = data.get("statistical_test_result", {})
+                if test_result:
+                    findings.append("Statistical test executed.")
+
         return findings
 
     def _compute_confidence(self, action: str, data: dict) -> float:
