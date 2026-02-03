@@ -1,6 +1,6 @@
 import asyncio
 
-from metric_anomaly_investigator.investigation_planner import InvestigationPlanner
+from metric_anomaly_investigator.agent import InvestigationPlanner
 from metric_anomaly_investigator.schemas import UserQuery
 
 

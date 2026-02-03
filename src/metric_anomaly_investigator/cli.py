@@ -1,12 +1,12 @@
 import asyncio
 import traceback
-from metric_anomaly_investigator.metric_anomaly_agent import MetricAnomalyAgent
+from metric_anomaly_investigator.agent import MetricAnomalyAgent
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-async def main():
+async def async_main():
     agent = MetricAnomalyAgent()
     logger.info("Starting anomaly investigation via CLI")
     logger.info("Please wait, this may take a few moments...")
@@ -35,9 +35,14 @@ async def main():
             logger.error(traceback.format_exc())
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the CLI."""
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-    asyncio.run(main())
+    asyncio.run(async_main())
+
+
+if __name__ == "__main__":
+    main()
