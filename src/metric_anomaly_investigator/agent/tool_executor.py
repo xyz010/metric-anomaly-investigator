@@ -10,7 +10,7 @@ from metric_anomaly_investigator.schemas import (
     AnalyzeRetentionParams,
     StatisticalTestParams,
 )
-from metric_anomaly_investigator.db.mock_warehouse import MockDataWarehouse
+from metric_anomaly_investigator.mock_warehouse import MockDataWarehouse
 from metric_anomaly_investigator.settings import settings
 
 logger = logging.getLogger(__name__)

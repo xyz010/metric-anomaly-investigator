@@ -1,6 +1,4 @@
-from metric_anomaly_investigator.db.mock_warehouse import (
-    MockDataWarehouse,
-)
+from metric_anomaly_investigator.mock_warehouse import MockDataWarehouse
 
 warehouse = MockDataWarehouse()
 
