@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
 from typing import Literal, Annotated, Union
+
+from pydantic import BaseModel, Field
 
 
 class BaseStep(BaseModel):
@@ -7,7 +8,6 @@ class BaseStep(BaseModel):
     reasoning: str
 
 
-# Parameter schemas for each action
 class QueryMetricParams(BaseModel):
     metric_name: Literal["dau", "wau", "events_per_user"]
     time_range: tuple[str, str] = Field(
@@ -48,7 +48,12 @@ class StatisticalTestParams(BaseModel):
     time_range: tuple[str, str]
 
 
-# Step classes inheriting from BaseStep
+class GenerateInsightsParams(BaseModel):
+    preliminary_hypothesis: str = Field(
+        description="Your current hypothesis about the root cause based on findings so far"
+    )
+
+
 class QueryMetricStep(BaseStep):
     action: Literal["query_metric"] = "query_metric"
     parameters: QueryMetricParams
@@ -74,6 +79,11 @@ class StatisticalTestStep(BaseStep):
     parameters: StatisticalTestParams
 
 
+class GenerateInsightsStep(BaseStep):
+    action: Literal["generate_insights"] = "generate_insights"
+    parameters: GenerateInsightsParams
+
+
 InvestigationStep = Annotated[
     Union[
         QueryMetricStep,
@@ -81,6 +91,7 @@ InvestigationStep = Annotated[
         CheckDeploymentsStep,
         AnalyzeRetentionStep,
         StatisticalTestStep,
+        GenerateInsightsStep,
     ],
     Field(discriminator="action"),
 ]

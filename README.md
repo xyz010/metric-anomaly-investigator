@@ -1,24 +1,98 @@
 # Metric Anomaly Investigator
 
-An autonomous AI agent that investigates metric anomalies through multi-step reasoning and planning.
+An autonomous AI agent that investigates metric anomalies through iterative multi-step reasoning.
 
 ## The Problem
 
-As a platform engineer, I've spent countless of hours trying to find the source of a bug, weird behavioor and production incidents. The process would almost always look the same, manually opening up Sentry to identify key components and services involved and then manually exploring the Cloudwatch with ad-hoc SQL queris, time segmentation and comparing distributions of the nominal behavior.
+As a platform engineer, I've spent countless hours trying to find the source of bugs, weird behavior, and production incidents. The process would almost always look the same: manually opening up Sentry to identify key components and services involved, then manually exploring CloudWatch with ad-hoc SQL queries, time segmentation, and comparing distributions of nominal behavior.
 
-The metric anomaly investigator agent fixes that using agentic AI via multi-step reasoning.
+The Metric Anomaly Investigator fixes that using agentic AI via iterative multi-step reasoning.
 
 ## Architecture
 
-1. **Investigation Planner** --> An AI agent that is responsible to generate a plan to answer a user's question
-2. **Tool Executor** --> The tooling necessary for the agent to perform data operations in the mock data warehouse
-3. **Insights Generator** --> An AI agent that generates the insights report after the metric anomalies have been identified
-4. **Metric Anomaly Agent** --> The main AI agent that executes the plan it receives from the Investigation Planner and invokes Insights Generator with its results
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    MetricAnomalyAgent                           │
+│                      (Orchestrator)                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   ┌─────────────────┐         ┌─────────────────┐               │
+│   │  Step Decision  │         │    Insights     │               │
+│   │     Agent       │         │    Generator    │               │
+│   │                 │         │      Agent      │               │
+│   │ Decides next    │         │                 │               │
+│   │ investigation   │         │ Synthesizes     │               │
+│   │ action          │         │ findings into   │               │
+│   └────────┬────────┘         │ final report    │               │
+│            │                  └────────▲────────┘               │
+│            │                           │                        │
+│            ▼                           │                        │
+│   ┌─────────────────┐                  │                        │
+│   │  Tool Executor  │                  │                        │
+│   │                 │──────────────────┘                        │
+│   │ query_metric    │   (when ready)                            │
+│   │ segment_by_dim  │                                           │
+│   │ check_deploys   │                                           │
+│   │ analyze_retain  │                                           │
+│   │ statistical_test│                                           │
+│   └────────┬────────┘                                           │
+│            │                                                    │
+│            ▼                                                    │
+│   ┌─────────────────┐                                           │
+│   │ Mock Warehouse  │                                           │
+│   │    (SQLite)     │                                           │
+│   └─────────────────┘                                           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Components
+
+1. **MetricAnomalyAgent** - Main orchestrator that coordinates the investigation loop
+2. **Step Decision Agent** - AI agent that decides the next investigation action based on current findings
+3. **Tool Executor** - Executes investigation actions against the data warehouse
+4. **Insights Generator Agent** - AI agent that synthesizes all findings into a final report
+5. **Mock Warehouse** - SQLite-based data store with synthetic metrics, deployments, and user data
+
+### Investigation Flow
+
+```
+User Query
+    │
+    ▼
+┌─────────────────────────────────────┐
+│  Step Decision Agent decides next   │◄──────┐
+│  action based on findings so far    │       │
+└─────────────────┬───────────────────┘       │
+                  │                           │
+                  ▼                           │
+         ┌───────────────────┐                │
+         │ generate_insights?│                │
+         └───────┬───────────┘                │
+                 │                            │
+        No ──────┴────── Yes                  │
+        │                 │                   │
+        ▼                 ▼                   │
+┌───────────────┐  ┌─────────────────┐        │
+│ Tool Executor │  │ Insights Agent  │        │
+│ executes step │  │ generates report│        │
+└───────┬───────┘  └────────┬────────┘        │
+        │                   │                 │
+        │                   ▼                 │
+        │            Final Report             │
+        │                                     │
+        └─────────────────────────────────────┘
+```
 
 ## Design Choices
-1. I opted for using the agentic framework of PydanticAI since I am a being fan of its Pydantic models and allows us to use structure outout in every part of the agentic process.
 
-2. For the scope of this exercise, I chose to generate synthetic data to focus more on the implementation of teh agentic workflow. However, I belive that teh generated data and tables are a good proxy of realistic patterns and schemas
+1. **Iterative ReAct Pattern** - Instead of generating a full plan upfront, the agent decides one action at a time based on accumulated findings. This allows adaptive investigation that responds to what the data reveals.
+
+2. **Two Sub-Agents** - Separation of concerns between step decision (what to investigate next) and insight synthesis (what does it all mean).
+
+3. **PydanticAI Framework** - Structured outputs at every stage using Pydantic models, ensuring type safety and clear contracts between components.
+
+4. **Synthetic Data** - Generated realistic data to focus on the agentic workflow. The data patterns and schemas mirror real-world analytics scenarios.
 
 ## Installation
 
@@ -63,16 +137,11 @@ Once the CLI is running, you can ask questions like:
 
 Type `exit` to quit the CLI.
 
-### Running Examples
+### Running Evaluations
 
-The `examples/` folder contains scripts demonstrating individual components:
-
+Run the evaluation suite to test agent performance:
 ```bash
-# Run the investigation planner example
-uv run python examples/planner_example.py
-
-# Run the mock warehouse example
-uv run python examples/warehouse_example.py
+uv run python evals/eval.py
 ```
 
 ## Development
@@ -92,12 +161,14 @@ uv run pytest
 ```
 metric-anomaly-investigator/
 ├── src/metric_anomaly_investigator/
-│   ├── cli.py              # CLI entry point
-│   ├── agent/              # AI agent components
-│   ├── mock_warehouse/     # Mock data warehouse
-│   ├── schemas/            # Pydantic models
-│   └── settings.py         # Configuration
-├── examples/               # Example scripts
-├── tests/                  # Test suite
+│   ├── cli.py                 # CLI entry point
+│   ├── agent/
+│   │   ├── metric_anomaly_agent.py  # Main orchestrator
+│   │   ├── tool_executor.py         # Action execution
+│   │   └── prompts.py               # System prompts
+│   ├── mock_warehouse/        # Mock data warehouse
+│   ├── schemas/               # Pydantic models
+│   └── settings.py            # Configuration
+├── evals/                     # Evaluation suite
 └── pyproject.toml
 ```

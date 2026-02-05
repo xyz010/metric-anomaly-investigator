@@ -14,9 +14,8 @@ console = Console()
 async def async_main():
     agent = MetricAnomalyAgent()
     logger.info("Starting anomaly investigation via CLI")
-    logger.info("Please wait, this may take a few moments...")
     logger.info("---------------------------------------------------")
-    logger.info(f"Using model: {agent.investigation_planner.agent.model.model_name}")
+    logger.info("Two sub-agents: Step Decision + Insights Generator")
 
     logger.info("Ask me about metric drops/spikes!")
     query = "There was a sudden drop in daily active users on Android last week. Investigate the cause."
@@ -31,12 +30,10 @@ async def async_main():
             continue
 
         try:
-            plan, context_id = await agent.investigate_anomaly(
-                query, context_id=context_id
-            )
-            logger.info(f"Investigation Plan:\n{plan}\n")
+            context = await agent.investigate_anomaly(query, context_id=context_id)
+            logger.info(f"Investigation Plan:\n{context}\n")
 
-            report = agent.conversations[context_id].insights
+            report = agent.conversations[context.conversation_id].insights
             if report:
                 print_report(report, console)
             else:

@@ -130,8 +130,8 @@ async def run_single_eval(agent: MetricAnomalyAgent, test_case: dict) -> EvalRes
         )
         console.print(f"  Query: {test_case['query'][:60]}...")
 
-        _, context_id = await agent.investigate_anomaly(test_case["query"])
-        report = agent.conversations[context_id].insights
+        context = await agent.investigate_anomaly(test_case["query"])
+        report = context.insights
 
         if not report:
             return EvalResult(
@@ -238,9 +238,7 @@ async def run_eval(test_cases: list[dict] | None = None):
         test_cases = TEST_CASES
 
     agent = MetricAnomalyAgent()
-    console.print(
-        f"[dim]Model: {agent.investigation_planner.agent.model.model_name}[/dim]"
-    )
+    console.print("[dim]Running with Step Decision + Insights Generator agents[/dim]")
     console.print(f"[dim]Running {len(test_cases)} test cases...[/dim]")
 
     results = []
