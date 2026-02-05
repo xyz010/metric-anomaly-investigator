@@ -46,16 +46,18 @@ class InsightsGenerator:
         # extract findings + confidencefrom the successful results
 
         prompt = f"Investigation plan hypothesis: {plan.hypothesis}\n\n"
-        prompt += "Investigation findignsresults:\n"
+        prompt += "Investigation findings:\n\n"
 
         for result in results:
             if result.success:
-                prompt += f"Step {result.step_id}"
+                prompt += f"Step {result.step_id}:\n"
                 for finding in result.key_findings:
-                    prompt += f"- {finding}\n"
-                prompt += f"Confidence score: {result.confidence_score}\n\n"
+                    prompt += f"  {finding}\n"
+                prompt += f"  Confidence score: {result.confidence_score}\n\n"
 
-        prompt += "Based on the above, generate an insights report with actionable recommendations."
+        prompt += """Based on the above findings, generate an insights report.
+            IMPORTANT: Include specific details from the findings in your root_cause and affected_segments.
+            If a deployment correlates with the metric drop timing, include it in correlated_events."""
 
         response = await self.agent.run(user_prompt=prompt)
 

@@ -275,6 +275,12 @@ class MockDataWarehouse:
         Returns: {'day_1': 0.65, 'day_7': 0.42, 'day_30': 0.28}
         Inspired by https://www.moesif.com/docs/user-analytics/cohort-retention-analysis/
         """
+
+        user_profiles_column_map = {
+            "platform": "signup_platform",
+            "country": "signup_country",
+        }
+
         # find total pool of users
         # for each retention day:
         #   find users active on that day
@@ -288,7 +294,8 @@ class MockDataWarehouse:
         params = [cohort_date]
         if filters:
             for col, val in filters.items():
-                cohort_size_query += f" AND {col} = ?"
+                mapped_col = user_profiles_column_map.get(col, col)
+                cohort_size_query += f" AND {mapped_col} = ?"
                 params.append(val)
 
         with connect(self.db_path) as conn:
@@ -310,7 +317,8 @@ class MockDataWarehouse:
 
             if filters:
                 for col, val in filters.items():
-                    retention_query += f" AND user_profiles.{col} = ?"
+                    mapped_col = user_profiles_column_map.get(col, col)
+                    retention_query += f" AND user_profiles.{mapped_col} = ?"
                     retention_params.append(val)
 
             with connect(self.db_path) as conn:

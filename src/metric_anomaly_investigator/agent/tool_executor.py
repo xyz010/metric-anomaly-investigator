@@ -94,23 +94,57 @@ class ToolExecutor:
             case "segment_by_dimension":
                 segmented_data = data.get("segmented_data", [])
                 if segmented_data:
-                    findings.append(
-                        f"Segmented data into {len(segmented_data)} groups."
+                    dimension_name = segmented_data[0].get("dimension_name", "unknown")
+                    findings.append(f"Segmented by {dimension_name}:")
+
+                    sorted_segments = sorted(
+                        segmented_data, key=lambda x: x.get("pct_change", 0)
                     )
+                    for segment in sorted_segments:
+                        dim_value = segment.get("dimension_value", "unknown")
+                        pct_change = segment.get("pct_change", 0)
+                        before = segment.get("before_value", 0)
+                        after = segment.get("after_value", 0)
+                        sample_size = segment.get("sample_size", 0)
+                        findings.append(
+                            f"  - {dim_value}: {pct_change:+.1%} change "
+                            f"(before={before:.0f}, after={after:.0f}, n={sample_size})"
+                        )
             case "check_deployments":
                 deployments = data.get("deployments", [])
                 if deployments:
-                    findings.append(
-                        f"Found {len(deployments)} deployments in the specified time range."
-                    )
+                    findings.append(f"Found {len(deployments)} deployments:")
+                    for dep in deployments:
+                        dep_id = dep.get("deployment_id", "unknown")
+                        dep_date = dep.get("deployment_date", "unknown")
+                        platform = dep.get("platform", "unknown")
+                        version = dep.get("app_version", "unknown")
+                        regions = dep.get("regions", [])
+                        rollout = dep.get("rollout_percentage", 0)
+                        findings.append(
+                            f"  - {dep_id}: {platform} v{version} on {dep_date}, "
+                            f"regions={regions}, rollout={rollout:.0%}"
+                        )
+                else:
+                    findings.append("No deployments found in the specified time range.")
             case "analyze_retention":
                 retention_data = data.get("retention_data", [])
-                if retention_data:
-                    findings.append("Cohort retention analysis completed.")
+                if retention_data and retention_data[0]:
+                    findings.append("Cohort retention rates:")
+                    for key, value in retention_data[0].items():
+                        findings.append(f"  - {key}: {value:.1%}")
             case "statistical_analysis":
                 test_result = data.get("statistical_test_result", {})
                 if test_result:
-                    findings.append("Statistical test executed.")
+                    p_value = test_result.get("p_value", 1.0)
+                    significant = test_result.get("significant", False)
+                    control_mean = test_result.get("control_mean", 0)
+                    treatment_mean = test_result.get("treatment_mean", 0)
+                    findings.append(
+                        f"Statistical test: p-value={p_value:.4f}, "
+                        f"significant={significant}, "
+                        f"control_mean={control_mean:.2f}, treatment_mean={treatment_mean:.2f}"
+                    )
 
         return findings
 

@@ -8,11 +8,11 @@ from metric_anomaly_investigator.schemas import (
     UserQuery,
 )
 
-from metric_anomaly_investigator.agent import (
+from metric_anomaly_investigator.agent.investigation_planner_agent import (
     InvestigationPlanner,
-    InsightsGenerator,
-    ToolExecutor,
 )
+from metric_anomaly_investigator.agent.insights_agent import InsightsGenerator
+from metric_anomaly_investigator.agent.tool_executor import ToolExecutor
 
 logger = logging.getLogger(__name__)
 

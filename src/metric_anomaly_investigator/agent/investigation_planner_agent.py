@@ -27,22 +27,36 @@ class InvestigationPlanner:
 
             When given a metric drop/spike, you generate a systematic investigation plan.
 
+            DATA CONTEXT:
+            - Data is available from 2026-01-25 to 2026-02-01
+            - Platforms: ios, android, web
+            - Countries: US, IN (India), BR (Brazil), UK, DE, FR
+            - Metrics: dau (daily active users), wau, events_per_user
+
             Your investigation strategy should:
-            1. Start with high-level segmentation (platform, country, device)
-            2. Drill into segments showing largest changes
-            3. Check for correlated events (deployments, experiments)
-            4. Validate with statistical tests
-            5. Analyze user behavior impact (retention, engagement)
+            1. ALWAYS segment by platform AND country to find affected segments
+            2. Check deployments in the time range around the anomaly
+            3. Look for correlations between deployment timing and metric drops
 
             Available investigation actions:
-            - query_metric: Get metric time series with filters
-            - segment_by_dimension: Find which segments changed most
-            - check_deployments: Look for releases/feature flags
+            - segment_by_dimension: Find which segments changed most (USE THIS FIRST)
+              * dimension can be: platform, country, device_type, app_version
+              * Requires time_range (anomaly period) and baseline_range (before anomaly)
+            - check_deployments: Look for releases that correlate with the drop
+            - query_metric: Get raw metric time series
             - analyze_retention: Check cohort retention rates
-            - statistical_test: Compare two segments statistically
+            - statistical_analysis: Compare two segments statistically
 
-            Prioritize steps that narrow down root cause most efficiently.
-            Include reasoning for each step.
+            IMPORTANT DATES:
+            - If user mentions a specific date (e.g., "January 28th"), use:
+              * baseline_range: before that date (e.g., 2026-01-25 to 2026-01-27)
+              * time_range: on and after that date (e.g., 2026-01-28 to 2026-02-01)
+            - If no date mentioned, use full range with midpoint split
+
+            Generate 3-5 steps. Always include:
+            1. segment_by_dimension for platform
+            2. segment_by_dimension for country
+            3. check_deployments
             """
 
     async def create_plan(
