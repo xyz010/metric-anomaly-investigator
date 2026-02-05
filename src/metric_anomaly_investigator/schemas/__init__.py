@@ -12,6 +12,8 @@ from .investigation_actions import (
     AnalyzeRetentionStep,
     StatisticalTestParams,
     StatisticalTestStep,
+    GenerateInsightsParams,
+    GenerateInsightsStep,
 )
 from .models import (
     StepResult,
@@ -38,6 +40,8 @@ __all__ = [
     "AnalyzeRetentionStep",
     "StatisticalTestParams",
     "StatisticalTestStep",
+    "GenerateInsightsParams",
+    "GenerateInsightsStep",
     # Result models
     "StepResult",
     "InsightReport",

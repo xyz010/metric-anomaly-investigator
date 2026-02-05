@@ -17,9 +17,6 @@ async def async_main():
     logger.info("---------------------------------------------------")
     logger.info("Two sub-agents: Step Decision + Insights Generator")
 
-    logger.info("Ask me about metric drops/spikes!")
-    query = "There was a sudden drop in daily active users on Android last week. Investigate the cause."
-
     context_id = None
 
     while True:
